@@ -1,56 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Response from './response';
 
-/*
- * Question component
- */
-export default class Question extends React.Component {
+export default function Question(props) {
 
+  const question = props.question;
+  const choices = props.choices;
+  const [answered, setAnswered] = useState(false);
+  const [score, setScore] = useState(props.score);
 
-    constructor(props) {
-        super(props);
-        this.state = {
-            question: this.props.question,
-            choices: this.props.choices,
-            answered: false,
-            score: this.props.score
-        };
+  function onChoiceClick(correct) {
+    const newScore = correct ? score + 1 : score;
+
+    if (!answered) {
+      props.updateScore(newScore);
+      setAnswered(true);
+      setScore(newScore);
     }
+  }
 
- 
-    onChoiceClick(correct) {
-        const newScore = correct ? this.state.score + 1 : this.state.score;
+  const responses = (choices || []).map((choice, index) => {
+    return (
+      <Response
+        title={choice.title}
+        correct={choice.correct}
+        key={index}
+        answered={answered}
+        onChoiceClick={onChoiceClick}
+      />
+    );
+  });
 
-        if (!this.state.answered) {
-            this.props.updateScore(newScore);
-            this.setState({
-                answered: true,
-                score: newScore
-            });
-        }
-    }
-
- 
-    render() {
-        const {question, choices, answered} = this.state;
-
-        const responses = choices.map(
-            (choice, index) => {
-                return <Response
-                    title={choice.title}
-                    correct={choice.correct}
-                    key={index}
-                    answered={answered}
-                    onChoiceClick={this.onChoiceClick.bind(this)}
-                />
-            });
-
-        return (
-            <div>
-                <div dangerouslySetInnerHTML={{__html: (this.props.id + 1) + ' - ' + question}}/>
-                <ul>{responses}</ul>
-            </div>
-
-        );
-    };
+  return (
+    <div>
+      <div
+        dangerouslySetInnerHTML={{ __html: props.id + 1 + ' - ' + question }}
+      />
+      <ul>{responses}</ul>
+    </div>
+  );
 }
