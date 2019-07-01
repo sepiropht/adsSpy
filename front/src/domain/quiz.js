@@ -88,7 +88,7 @@ function Quiz() {
       <Context.Provider value={{dispatch, state}}>
         <div>
           {questions}
-        <Result score={state.score} complete={quiz.length === state.nbrOfAnswers} />
+        <Result  quizLength={quiz.length} />
       </div>
       </Context.Provider>
     );

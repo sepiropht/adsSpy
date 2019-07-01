@@ -1,9 +1,14 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import Context from './context';
 
+export default function Result({quizLength}) {
 
-export default function Result({score, complete}) {
+    const { state } = useContext(Context);
 
-    const getScoreLabel = 'Votre score : ' + score + ' ' + (score > 1 ? 'bonnes réponses' : 'bonne réponse');
+    const getScoreLabel = 'Votre score : ' + state.score + ' ' + (state.score > 1 ? 'bonnes réponses' : 'bonne réponse');
+    const complete = quizLength === state.nbrOfAnswers;
+
+    console.log({complete})
 
     return (
         <div className="result">
