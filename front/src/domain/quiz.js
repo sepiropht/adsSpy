@@ -1,18 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import shuffle from 'lodash/shuffle';
 import Question from './question';
 import Result from './result';
 import Choice from '../model/choice';
+import Context from './context';
 
 // QUIZ API URL
 const API_URL = 'https://opentdb.com/api.php?amount=5&type=multiple';
+const init = {
+  score: 0,
+  nbrOfAnswers: 0
+};
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'UPDATE_SCORE':
+      return {
+        ...state,
+        score: action.payload
+      };
+    case 'NBRE_ANSWER': 
+      return {
+        ...state,
+        nbrOfAnswers: state.nbrOfAnswers + 1
+      };
+    default: return state;
+  }
+};
 
 function Quiz() {
-  const [nbrOfAnswers, setAnswersNumber] = useState(0);
-  const [score, setScore] = useState(0);
+  //const [nbrOfAnswers, setAnswersNumber] = useState(0);
+  //const [score, setScore] = useState(0);
   const [quiz, setQuiz] = useState([]);
   const [isLoaded, toggleLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const [state, dispatch] = useReducer(reducer, init);
+
 
   useEffect(() => {
     fetch(API_URL)
@@ -30,10 +54,10 @@ function Quiz() {
       );
   }, []);
 
-  function updateScore(newScore) {
-    setScore(score + newScore);
-    setAnswersNumber(nbrOfAnswers + 1);
-  }
+  // function updateScore(newScore) {
+  //   setScore(score + newScore);
+  //   setAnswersNumber(nbrOfAnswers + 1);
+  // }
 
   function createChoices(question) {
     return shuffle([
@@ -47,10 +71,10 @@ function Quiz() {
       <Question
         question={question.question}
         choices={createChoices(question)}
-        score={score}
+        score={state.score}
         key={index}
         id={index}
-        updateScore={updateScore}
+        //updateScore={updateScore}
       />
     );
   });
@@ -61,10 +85,12 @@ function Quiz() {
     return <div>Loading quiz...</div>;
   } else {
     return (
-      <div>
-        {questions}
-        <Result score={score} complete={quiz.length === nbrOfAnswers} />
+      <Context.Provider value={{dispatch, state}}>
+        <div>
+          {questions}
+        <Result score={state.score} complete={quiz.length === state.nbrOfAnswers} />
       </div>
+      </Context.Provider>
     );
   }
 }
