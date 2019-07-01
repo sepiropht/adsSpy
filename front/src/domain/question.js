@@ -3,24 +3,21 @@ import Response from './response';
 import Context from './context';
 
 export default function Question(props) {
-
   const question = props.question;
   const choices = props.choices;
   const [answered, setAnswered] = useState(false);
   //const [score, setScore] = useState(props.score);
 
-  const {dispatch, state} = useContext(Context);
-  
+  const { dispatch, state } = useContext(Context);
+
   function onChoiceClick(correct) {
-    console.log(state.score);
     const newScore = correct ? state.score + 1 : state.score;
 
     if (!answered) {
       //props.updateScore(newScore);
-      dispatch({payload: newScore, type: 'UPDATE_SCORE'})
+      dispatch({ payload: newScore, type: 'UPDATE_SCORE' });
       setAnswered(true);
-      dispatch({type: 'NBRE_ANSWER'})
-      
+      dispatch({ type: 'NBRE_ANSWER' });
     }
   }
 

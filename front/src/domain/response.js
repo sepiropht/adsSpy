@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 /*
  * Response component
  */
 export default function Response(props) {
-
   const title = props.title;
   const correct = props.correct;
 

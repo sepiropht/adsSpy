@@ -7,9 +7,14 @@ import Context from './context';
 
 // QUIZ API URL
 const API_URL = 'https://opentdb.com/api.php?amount=5&type=multiple';
-const init = {
+
+const initState = {
   score: 0,
-  nbrOfAnswers: 0
+  nbrOfAnswers: 0,
+  quiz: [],
+  isLoaded: false,
+  error: null,
+  next: [1]
 };
 
 const reducer = (state, action) => {
@@ -19,45 +24,61 @@ const reducer = (state, action) => {
         ...state,
         score: action.payload
       };
-    case 'NBRE_ANSWER': 
+    case 'NBRE_ANSWER':
       return {
         ...state,
         nbrOfAnswers: state.nbrOfAnswers + 1
       };
-    default: return state;
+    case 'QUIZ_LOADED':
+      return {
+        ...state,
+        quiz: action.payload
+      };
+    case 'LOADING_FINISH':
+      return {
+        ...state,
+        isLoaded: true
+      };
+    case 'SET_ERROR':
+      return {
+        ...state,
+        error: action.payload
+      };
+    case 'RELOADING':
+      return {
+        ...state,
+        next: [Math.random()]
+      };
+    case 'SET_QUIZ':
+      return {
+        ...state,
+        quiz: action.payload
+      };
+    case 'INIT':
+    default:
+      return initState;
   }
 };
 
 function Quiz() {
-  //const [nbrOfAnswers, setAnswersNumber] = useState(0);
-  //const [score, setScore] = useState(0);
-  const [quiz, setQuiz] = useState([]);
-  const [isLoaded, toggleLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const [state, dispatch] = useReducer(reducer, init);
-
+  const [state, dispatch] = useReducer(reducer, initState);
 
   useEffect(() => {
+    dispatch({ type: 'INIT' });
     fetch(API_URL)
       .then(result => result.json())
       .then(
         json => {
-          toggleLoading(true);
-          setQuiz(json.results);
+          dispatch({ type: 'LOADING_FINISH' });
+          dispatch({ type: 'SET_QUIZ', payload: json.results });
         },
         // handle errors here
         error => {
-          toggleLoading(true);
-          setError(error);
+          dispatch({ type: 'LOADING_FINISH' });
+          dispatch({ type: 'SET_ERROR', payload: error });
         }
       );
-  }, []);
-
-  // function updateScore(newScore) {
-  //   setScore(score + newScore);
-  //   setAnswersNumber(nbrOfAnswers + 1);
-  // }
+  }, state.next);
 
   function createChoices(question) {
     return shuffle([
@@ -66,7 +87,7 @@ function Quiz() {
     ]);
   }
 
-  const questions = (quiz || []).map((question, index) => {
+  const questions = state.quiz.map((question, index) => {
     return (
       <Question
         question={question.question}
@@ -74,22 +95,21 @@ function Quiz() {
         score={state.score}
         key={index}
         id={index}
-        //updateScore={updateScore}
       />
     );
   });
 
-  if (error) {
-    return <div>Error: {error.message}</div>;
-  } else if (!isLoaded) {
+  if (state.error) {
+    return <div>Error: {state.error.message}</div>;
+  } else if (!state.isLoaded) {
     return <div>Loading quiz...</div>;
   } else {
     return (
-      <Context.Provider value={{dispatch, state}}>
+      <Context.Provider value={{ dispatch, state }}>
         <div>
           {questions}
-        <Result score={state.score} complete={quiz.length === state.nbrOfAnswers} />
-      </div>
+          <Result/>
+        </div>
       </Context.Provider>
     );
   }
